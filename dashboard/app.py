@@ -117,6 +117,11 @@ if uploaded_file is not None:
     st.dataframe(df.head())
 
     if st.button("🚀 Run Fraud Detection on File"):
+
+        # ✅ DROP Time (CRITICAL FIX)
+        if "Time" in df.columns:
+            df = df.drop("Time", axis=1)
+
         # Drop Class if exists
         if "Class" in df.columns:
             df = df.drop("Class", axis=1)
@@ -126,6 +131,10 @@ if uploaded_file is not None:
             from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
             df["Amount"] = scaler.fit_transform(df[["Amount"]])
+
+        # ✅ ENSURE COLUMN ORDER (VERY IMPORTANT)
+        expected_cols = [f"V{i}" for i in range(1, 29)] + ["Amount"]
+        df = df[expected_cols]
 
         predictions = model.predict(df)
         probabilities = model.predict_proba(df)[:, 1]
