@@ -1,45 +1,67 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 import shap
 import matplotlib.pyplot as plt
+
+# ----------------------------
+# PAGE CONFIG
+# ----------------------------
+st.set_page_config(page_title="Fraud Detection System", layout="wide")
 
 # ----------------------------
 # LOAD MODEL
 # ----------------------------
 model = joblib.load("models/fraud_model.pkl")
 
-st.title("💳 Fraud Detection System")
+# ----------------------------
+# HEADER
+# ----------------------------
+st.markdown("# 💳 AI Fraud Detection System")
+st.markdown("### Detect fraudulent transactions using Machine Learning")
 
-st.write("Enter transaction details:")
+st.divider()
 
 # ----------------------------
-# INPUT FEATURES
+# INPUT SECTION
 # ----------------------------
+st.subheader("🔢 Enter Transaction Features")
+
+col1, col2 = st.columns(2)
+
 features = {}
 
-for i in range(1, 29):
-    features[f"V{i}"] = st.number_input(f"V{i}", value=0.0)
+for i in range(1, 15):
+    features[f"V{i}"] = col1.number_input(f"V{i}", value=0.0)
 
-amount = st.number_input("Amount", value=0.0)
+for i in range(15, 29):
+    features[f"V{i}"] = col2.number_input(f"V{i}", value=0.0)
 
-# Convert to dataframe
+amount = st.number_input("💰 Transaction Amount", value=0.0)
+
 input_data = pd.DataFrame([features])
 input_data["Amount"] = amount
+
+st.divider()
 
 # ----------------------------
 # PREDICTION
 # ----------------------------
-if st.button("Predict"):
+if st.button("🚀 Predict Fraud"):
 
     prediction = model.predict(input_data)[0]
     prob = model.predict_proba(input_data)[0][1]
 
+    st.subheader("📊 Prediction Result")
+
     if prediction == 1:
-        st.error(f"🚨 Fraud Detected! Probability: {prob:.4f}")
+        st.error(f"🚨 Fraud Detected!\n\nConfidence: {prob:.4f}")
     else:
-        st.success(f"✅ Legit Transaction. Probability: {prob:.4f}")
+        st.success(f"✅ Legit Transaction\n\nConfidence: {prob:.4f}")
+
+    st.progress(float(prob))
+
+    st.divider()
 
     # ----------------------------
     # SHAP EXPLANATION
