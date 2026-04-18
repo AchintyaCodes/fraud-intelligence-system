@@ -5,7 +5,6 @@ import seaborn as sns
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 
 from imblearn.over_sampling import SMOTE
@@ -88,17 +87,39 @@ model.fit(X_train, y_train)
 print("Model training done")
 
 # ----------------------------
+# ----------------------------
 # PREDICTIONS
 # ----------------------------
 print("Making predictions...")
 y_pred = model.predict(X_test)
+y_prob = model.predict_proba(X_test)[:, 1]
 print("Predictions done")
 
 # ----------------------------
 # EVALUATION
 # ----------------------------
+from sklearn.metrics import roc_auc_score, roc_curve
+
 print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred, digits=4))
+
+# ROC-AUC
+roc_auc = roc_auc_score(y_test, y_prob)
+print("\nROC-AUC Score:", roc_auc)
+
+# ROC Curve
+fpr, tpr, _ = roc_curve(y_test, y_prob)
+
+plt.figure()
+plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.4f}")
+plt.plot([0, 1], [0, 1], linestyle='--')
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("ROC Curve")
+plt.legend()
+
+plt.savefig("outputs/roc_curve.png")
+plt.close()
