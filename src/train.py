@@ -1,22 +1,27 @@
+from preprocessing import load_data, preprocess
+from model import get_model
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import roc_auc_score, roc_curve
 
 from imblearn.over_sampling import SMOTE
+import joblib
+import shap
 
 # ----------------------------
 # LOAD DATA
 # ----------------------------
-df = pd.read_csv("data/creditcard.csv")
+df = load_data("data/creditcard.csv")
 
 print("Original Dataset shape:", df.shape)
 
-# 🔥 SAMPLE FOR SPEED (VERY IMPORTANT)
+# 🔥 SAMPLE FOR SPEED
 df = df.sample(50000, random_state=42)
 
 print("Sampled Dataset shape:", df.shape)
@@ -31,19 +36,13 @@ print(df['Class'].value_counts())
 plt.figure(figsize=(6,4))
 sns.countplot(x='Class', data=df)
 plt.title("Fraud vs Non-Fraud")
-
-# Save instead of show
 plt.savefig("outputs/class_distribution.png")
 plt.close()
 
 # ----------------------------
-# FEATURE SCALING
+# PREPROCESSING (FROM MODULE)
 # ----------------------------
-scaler = StandardScaler()
-df['Amount'] = scaler.fit_transform(df[['Amount']])
-
-# Drop Time
-df = df.drop(['Time'], axis=1)
+df = preprocess(df)
 
 # ----------------------------
 # SPLIT DATA
@@ -56,7 +55,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # ----------------------------
-# HANDLE IMBALANCE (SMOTE)
+# SMOTE
 # ----------------------------
 print("\nApplying SMOTE...")
 smote = SMOTE(random_state=42)
@@ -65,28 +64,20 @@ X_train, y_train = smote.fit_resample(X_train, y_train)
 print("After SMOTE:", np.bincount(y_train))
 
 # ----------------------------
-# MODEL TRAINING
+# MODEL (FROM MODULE)
 # ----------------------------
-# ----------------------------
-# MODEL TRAINING
-# ----------------------------
-from xgboost import XGBClassifier
-
-model = XGBClassifier(
-    n_estimators=100,
-    max_depth=6,
-    learning_rate=0.1,
-    scale_pos_weight=1,
-    n_jobs=-1,
-    random_state=42,
-    eval_metric="logloss"
-)
+model = get_model()
 
 print("\nStarting training...")
 model.fit(X_train, y_train)
 print("Model training done")
 
 # ----------------------------
+# SAVE MODEL
+# ----------------------------
+joblib.dump(model, "models/fraud_model.pkl")
+print("Model saved")
+
 # ----------------------------
 # PREDICTIONS
 # ----------------------------
@@ -98,8 +89,6 @@ print("Predictions done")
 # ----------------------------
 # EVALUATION
 # ----------------------------
-from sklearn.metrics import roc_auc_score, roc_curve
-
 print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
@@ -120,23 +109,19 @@ plt.xlabel("False Positive Rate")
 plt.ylabel("True Positive Rate")
 plt.title("ROC Curve")
 plt.legend()
-
 plt.savefig("outputs/roc_curve.png")
 plt.close()
 
-import shap
-
+# ----------------------------
+# SHAP EXPLAINABILITY
+# ----------------------------
 print("\nGenerating SHAP explanations...")
 
-# Create explainer
 explainer = shap.Explainer(model)
-
-# Use smaller sample (for speed)
 X_sample = X_test.sample(100, random_state=42)
 
 shap_values = explainer(X_sample)
 
-# Summary plot
 shap.summary_plot(shap_values, X_sample, show=False)
 plt.savefig("outputs/shap_summary.png")
 plt.close()
