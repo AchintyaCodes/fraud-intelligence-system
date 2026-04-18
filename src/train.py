@@ -42,12 +42,17 @@ plt.close()
 # ----------------------------
 # PREPROCESSING (FROM MODULE)
 # ----------------------------
-df = preprocess(df, save_scaler=True)
-# ----------------------------
-# SPLIT DATA
-# ----------------------------
+# Split BEFORE preprocessing
 X = df.drop('Class', axis=1)
 y = df['Class']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Apply preprocessing separately
+X_train = preprocess(X_train, save_scaler=True)
+X_test = preprocess(X_test, load_scaler=True)
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
