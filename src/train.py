@@ -1,4 +1,5 @@
-from preprocessing import load_data, preprocess
+from preprocessing import preprocess
+import pandas as pd
 from model import get_model
 
 import pandas as pd
@@ -17,11 +18,10 @@ import shap
 # ----------------------------
 # LOAD DATA
 # ----------------------------
-df = load_data("data/creditcard.csv")
-
+df = pd.read_csv("data/creditcard.csv")
 print("Original Dataset shape:", df.shape)
 
-# 🔥 SAMPLE FOR SPEED
+#  SAMPLE FOR SPEED
 df = df.sample(50000, random_state=42)
 
 print("Sampled Dataset shape:", df.shape)
@@ -42,8 +42,7 @@ plt.close()
 # ----------------------------
 # PREPROCESSING (FROM MODULE)
 # ----------------------------
-df = preprocess(df)
-
+df = preprocess(df, save_scaler=True)
 # ----------------------------
 # SPLIT DATA
 # ----------------------------
