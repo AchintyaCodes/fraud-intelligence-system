@@ -8,12 +8,19 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 
+from imblearn.over_sampling import SMOTE
+
 # ----------------------------
 # LOAD DATA
 # ----------------------------
 df = pd.read_csv("data/creditcard.csv")
 
-print("Dataset shape:", df.shape)
+print("Original Dataset shape:", df.shape)
+
+# 🔥 SAMPLE FOR SPEED (VERY IMPORTANT)
+df = df.sample(50000, random_state=42)
+
+print("Sampled Dataset shape:", df.shape)
 print(df.head())
 
 # ----------------------------
@@ -22,17 +29,21 @@ print(df.head())
 print("\nClass Distribution:")
 print(df['Class'].value_counts())
 
+plt.figure(figsize=(6,4))
 sns.countplot(x='Class', data=df)
 plt.title("Fraud vs Non-Fraud")
-plt.show()
+
+# Save instead of show
+plt.savefig("outputs/class_distribution.png")
+plt.close()
 
 # ----------------------------
-# FEATURE SCALING (IMPORTANT)
+# FEATURE SCALING
 # ----------------------------
 scaler = StandardScaler()
 df['Amount'] = scaler.fit_transform(df[['Amount']])
 
-# Drop Time (not useful)
+# Drop Time
 df = df.drop(['Time'], axis=1)
 
 # ----------------------------
@@ -45,19 +56,43 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
-from imblearn.over_sampling import SMOTE
-
+# ----------------------------
+# HANDLE IMBALANCE (SMOTE)
+# ----------------------------
+print("\nApplying SMOTE...")
 smote = SMOTE(random_state=42)
 X_train, y_train = smote.fit_resample(X_train, y_train)
 
 print("After SMOTE:", np.bincount(y_train))
-# ----------------------------
-# BASELINE MODEL
-# ----------------------------
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
 
+# ----------------------------
+# MODEL TRAINING
+# ----------------------------
+# ----------------------------
+# MODEL TRAINING
+# ----------------------------
+from xgboost import XGBClassifier
+
+model = XGBClassifier(
+    n_estimators=100,
+    max_depth=6,
+    learning_rate=0.1,
+    scale_pos_weight=1,
+    n_jobs=-1,
+    random_state=42,
+    eval_metric="logloss"
+)
+
+print("\nStarting training...")
+model.fit(X_train, y_train)
+print("Model training done")
+
+# ----------------------------
+# PREDICTIONS
+# ----------------------------
+print("Making predictions...")
 y_pred = model.predict(X_test)
+print("Predictions done")
 
 # ----------------------------
 # EVALUATION
@@ -66,4 +101,4 @@ print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
 print("\nClassification Report:")
-print(classification_report(y_test, y_pred))
+print(classification_report(y_test, y_pred, digits=4))
