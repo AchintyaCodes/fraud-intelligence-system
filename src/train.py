@@ -123,3 +123,22 @@ plt.legend()
 
 plt.savefig("outputs/roc_curve.png")
 plt.close()
+
+import shap
+
+print("\nGenerating SHAP explanations...")
+
+# Create explainer
+explainer = shap.Explainer(model)
+
+# Use smaller sample (for speed)
+X_sample = X_test.sample(100, random_state=42)
+
+shap_values = explainer(X_sample)
+
+# Summary plot
+shap.summary_plot(shap_values, X_sample, show=False)
+plt.savefig("outputs/shap_summary.png")
+plt.close()
+
+print("SHAP explanation saved")
