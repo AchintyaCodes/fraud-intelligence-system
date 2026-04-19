@@ -94,3 +94,19 @@ fraud-intelligence-system/
 ├── data/               # Dataset
 ├── requirements.txt
 └── README.md
+
+🚀 Installation & Run
+1️⃣ Clone Repository
+git clone https://github.com/AchintyaCodes/fraud-intelligence-system.git
+cd fraud-intelligence-system
+2️⃣ Install Dependencies
+pip install -r requirements.txt
+3️⃣ Train Model
+python src/train.py
+
+✔ Saves:
+model
+scaler
+plots
+4️⃣ Run App
+streamlit run dashboard/app.py
