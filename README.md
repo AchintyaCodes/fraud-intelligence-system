@@ -3,7 +3,8 @@
 <p align="center"> <img src="https://img.shields.io/badge/Machine%20Learning-XGBoost-blue?style=for-the-badge" /> <img src="https://img.shields.io/badge/Imbalance-SMOTE-orange?style=for-the-badge" /> <img src="https://img.shields.io/badge/Explainability-SHAP-purple?style=for-the-badge" /> <img src="https://img.shields.io/badge/Frontend-Streamlit-red?style=for-the-badge" /> <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge" /> </p> <p align="center"> <b>End-to-End ML System | Real-Time Predictions | Explainable AI</b> </p>
 🌟 Live Demo
 
-👉 https://fraud-intelligence-system-hggkcwgzfedtxebxsts2nt.streamlit.app/
+👉 https://fraud-intelligence-system-hggkcwgzfedtxebxsts2nt.streamlit.app/ 
+
 🧠 What This Project Does
 
 This is a production-style machine learning system that detects fraudulent credit card transactions in real-time using:
